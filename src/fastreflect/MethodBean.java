@@ -29,6 +29,9 @@ public abstract class MethodBean {
 		List<Method> methods = new ArrayList<Method>();
 		Class<?> cls = clsa;
 		while(true){
+			if(Object.class.equals(cls)){
+				break;
+			}
 			Method[] mths =  cls.getDeclaredMethods();
 			if(mths != null){
 				for(Method m : mths){
@@ -38,9 +41,6 @@ public abstract class MethodBean {
 				}
 			}
 			cls = cls.getSuperclass();
-			if(Object.class.equals(cls)){
-				break;
-			}
 		}
 		MethodBean bean = buildClass(clsa, methods);
 		bean.methods = methods;
@@ -84,15 +84,31 @@ public abstract class MethodBean {
 	}
 
 	private static MethodBean buildClass(Class<?> cls, List<Method> methods2) {
+		String fileName = cls.getName() + "__MethodBean";
+		MyClassLoader loader = MyClassLoader.getLoader(cls);
 		try {
-			String name = cls.getName() + "$MethodBean";
+			Class<?> methodCls = loader.loadClass(fileName);
+			return (MethodBean) methodCls.newInstance();
+		} catch (ClassNotFoundException e1) {
+		} catch (InstantiationException e) {
+		} catch (IllegalAccessException e) {
+		}
+		try {
+			if(!Modifier.isPublic(cls.getModifiers())){
+				throw new RuntimeException(cls.getName() + " is not public.");
+			}
+			
+			String className = cls.getName();
+			if(cls.isMemberClass()){
+				className = cls.getName().replaceAll("\\$", ".");
+			}
 			ClassPool cpool = ClassPool.getDefault(); 
 			cpool.insertClassPath(new ClassClassPath(cls));
-	        CtClass cc = cpool.makeClass(name, cpool.get(MethodBean.class.getName()));
+	        CtClass cc = cpool.makeClass(fileName, cpool.get(MethodBean.class.getName()));
 	        StringBuilder builder = new StringBuilder();
 	        builder.append("protected  Object invoke(Object obj, int id,  Object[] params) throws Throwable{\r\n");
 	        builder.append("if(obj == null) throw new NullPointerException();\r\n");
-	        builder.append(cls.getName()).append(" bean = (").append(cls.getName()).append(") obj;\r\n");
+	        builder.append(className).append(" bean = (").append(className).append(") obj;\r\n");
 	        builder.append("Object result = null;\r\n");
 	        builder.append("switch (id) {\r\n");
 	        for (int i = 0, length = methods2.size(); i < length; i++) {
@@ -126,11 +142,10 @@ public abstract class MethodBean {
 	        
 	        builder.append("default: break;}\r\n" + 
 	        "return result;}");
-	        System.out.println(builder);
+//	        System.out.println(builder);
 	        CtMethod m = CtMethod.make(builder.toString(), cc);
 			cc.addMethod(m);
-			
-			Class<?> dynamicCls =  MyClassLoader.getLoader(cls).loadMyClass(name, cc.toBytecode());
+			Class<?> dynamicCls =  loader.loadMyClass(fileName, cc.toBytecode());
 			return (MethodBean) dynamicCls.newInstance();
 			
 		} catch (Exception e) {
@@ -199,7 +214,7 @@ public abstract class MethodBean {
 			super();
 			this.index = index;
 		}
-		public Object invoke(Object obj, Object[] params) throws Throwable{
+		public Object invoke(Object obj, Object... params) throws Throwable{
 			return MethodBean.this.invoke(obj, index, params);
 		}
 	}

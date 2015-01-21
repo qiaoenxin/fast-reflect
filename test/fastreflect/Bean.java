@@ -26,7 +26,30 @@ public class Bean extends Parent{
 	public Bean() {
 		super();
 	}
+	
+	static class InnerClass{
+		
+		public static class IIClass{
+			private String N;
 
+			public String getN() {
+				return N;
+			}
+
+			public void setN(String n) {
+				N = n;
+			}
+		}
+		private String name;
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+	}
 	public String getName() {
 		return name;
 	}
