@@ -35,9 +35,9 @@ public abstract class ConstructorBean {
 			
 			
 			String className = cls.getName();
-			if(cls.isMemberClass()){
-				className = cls.getName().replaceAll("\\$", ".");
-			}
+//			if(cls.isMemberClass()){
+//				className = cls.getName().replaceAll("\\$", ".");
+//			}
 			ClassPool cpool = ClassPool.getDefault(); 
 			cpool.insertClassPath(new ClassClassPath(cls));
 	        CtClass cc = cpool.makeClass(fileName, cpool.get(ConstructorBean.class.getName()));

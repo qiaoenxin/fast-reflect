@@ -217,5 +217,15 @@ public abstract class MethodBean {
 		public Object invoke(Object obj, Object... params) throws Throwable{
 			return MethodBean.this.invoke(obj, index, params);
 		}
+		
+		public Method getMethod(){
+			return methods.get(index);
+		}
+		
+		@Override
+		public String toString() {
+			return methods.get(index).toString();
+		}
+		
 	}
 }
