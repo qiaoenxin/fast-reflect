@@ -27,7 +27,7 @@ public class Bean extends Parent{
 		super();
 	}
 	
-	static class InnerClass{
+	public static class InnerClass{
 		
 		public static class IIClass{
 			private String N;
